@@ -10,6 +10,17 @@ App React Native (Expo, dev-client) com:
   (enviar/receber pagamentos de verdade).
 - Sem anúncios.
 
+## Versão web
+
+Uma versão de navegador está publicada em:
+**https://bmoreira2004.github.io/criptor-miner-apk/**
+
+Ela prioriza o que é genuinamente real fora do app mobile: consulta de saldo
+ao vivo, benchmark real de hashing RandomX via WASM, e pagamentos Lightning
+via WebLN (extensão Alby). Código-fonte em `web/`, com README próprio
+explicando por que a mineração ali não se conecta a uma pool (limitação de
+navegador — veja `web/README.md`).
+
 ## Status deste pacote
 
 ✅ Testado com Jest (21 testes, 4 suítes, todos passando) — protocolo Stratum,
