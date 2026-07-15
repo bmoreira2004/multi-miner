@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { initLightning, getLightningBalance, createInvoice, payInvoice } from '../lib/lightningClient';
+import { isLightningAddress, resolveToBolt11 } from '../lib/lnurl';
 
 export default function LightningScreen() {
   const [mnemonic, setMnemonic] = useState('');
@@ -9,6 +10,7 @@ export default function LightningScreen() {
   const [invoiceAmount, setInvoiceAmount] = useState('');
   const [generatedInvoice, setGeneratedInvoice] = useState('');
   const [payBolt11, setPayBolt11] = useState('');
+  const [payAmount, setPayAmount] = useState('');
   const [status, setStatus] = useState('');
 
   const connectWallet = async () => {
@@ -53,7 +55,14 @@ export default function LightningScreen() {
 
   const handlePay = async () => {
     if (!payBolt11) {
-      setStatus('Cole um invoice (bolt11) para pagar.');
+      setStatus('Cole um invoice (bolt11) ou um endereço Lightning para pagar.');
+      return;
+    }
+    let bolt11;
+    try {
+      bolt11 = await resolveToBolt11(payBolt11, parseInt(payAmount, 10));
+    } catch (e) {
+      setStatus(e.message);
       return;
     }
     Alert.alert('Confirmar pagamento', 'Enviar este pagamento Lightning agora?', [
@@ -63,7 +72,7 @@ export default function LightningScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
-            await payInvoice(payBolt11.trim());
+            await payInvoice(bolt11);
             setStatus('Pagamento enviado.');
             refreshBalance();
           } catch (e) {
@@ -136,15 +145,29 @@ export default function LightningScreen() {
 
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Enviar</Text>
+            <Text style={styles.helperText}>
+              Aceita um invoice (lnbc...) ou um endereço Lightning, tipo{' '}
+              <Text style={{ color: '#5ab0ff' }}>nomedaconta@walletofsatoshi.com</Text>.
+            </Text>
             <TextInput
               style={[styles.input, { height: 70 }]}
-              placeholder="Cole o invoice (bolt11) de destino"
+              placeholder="Invoice (lnbc...) ou nome@walletofsatoshi.com"
               placeholderTextColor="#666"
               value={payBolt11}
               onChangeText={setPayBolt11}
               multiline
               autoCapitalize="none"
             />
+            {isLightningAddress(payBolt11) && (
+              <TextInput
+                style={[styles.input, { marginTop: 8 }]}
+                placeholder="Valor em sats"
+                placeholderTextColor="#666"
+                value={payAmount}
+                onChangeText={setPayAmount}
+                keyboardType="number-pad"
+              />
+            )}
             <TouchableOpacity style={[styles.button, { backgroundColor: '#f7931a' }]} onPress={handlePay}>
               <Text style={styles.buttonText}>Pagar</Text>
             </TouchableOpacity>

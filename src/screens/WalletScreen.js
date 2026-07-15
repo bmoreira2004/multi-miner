@@ -58,7 +58,12 @@ export default function WalletScreen() {
 
       {Object.values(COINS).map((coin) => (
         <View key={coin.symbol} style={styles.card}>
-          <Text style={styles.cardTitle}>{coin.name} ({coin.symbol})</Text>
+          <View style={styles.cardHeader}>
+            <View style={[styles.coinIcon, { backgroundColor: coin.symbol === 'XMR' ? '#ff6600' : '#a35ce8' }]}>
+              <Text style={styles.coinIconText}>{coin.symbol[0]}</Text>
+            </View>
+            <Text style={styles.cardTitle}>{coin.name} ({coin.symbol})</Text>
+          </View>
           <TextInput
             style={styles.input}
             placeholder={`Endereço ${coin.symbol} usado na mineração`}
@@ -69,9 +74,12 @@ export default function WalletScreen() {
           />
           {balances[coin.symbol] && !balances[coin.symbol].error && (
             <View style={{ marginTop: 10 }}>
-              <Text style={styles.balanceValue}>
-                {balances[coin.symbol].pending.toFixed(6)} {coin.symbol} pendente
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text style={{ fontSize: 20 }}>⛏️</Text>
+                <Text style={styles.balanceValue}>
+                  {balances[coin.symbol].pending.toFixed(6)} {coin.symbol}
+                </Text>
+              </View>
               <Text style={styles.balanceSub}>
                 {balances[coin.symbol].paidTotal.toFixed(6)} {coin.symbol} já pago pela pool
               </Text>
@@ -123,6 +131,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f1115' },
   title: { fontSize: 26, fontWeight: '700', color: '#fff', marginBottom: 16 },
   card: { backgroundColor: '#1c1f26', borderRadius: 12, padding: 16, marginBottom: 14 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
+  coinIcon: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  coinIconText: { color: '#fff', fontWeight: '800', fontSize: 13 },
   cardTitle: { color: '#fff', fontWeight: '700', marginBottom: 8 },
   input: { backgroundColor: '#14161b', color: '#fff', borderRadius: 10, padding: 12, marginTop: 6 },
   balanceValue: { color: '#2ecc71', fontSize: 18, fontWeight: '700' },

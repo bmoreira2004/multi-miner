@@ -3,10 +3,12 @@ import { useState } from 'react';
 const COINS = {
   XMR: {
     name: 'Monero',
+    color: '#ff6600',
     api: (addr) => `https://supportxmr.com/api/miner/${addr}/stats`,
   },
   WOW: {
     name: 'Wownero',
+    color: '#a35ce8',
     api: (addr) => `https://wow.hashvault.pro/api/miner/${addr}/stats`,
   },
 };
@@ -48,7 +50,18 @@ export default function WalletChecker() {
 
   return (
     <div className="card">
-      <h3>Verificar saldo minerado</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+        <span
+          style={{
+            width: 26, height: 26, borderRadius: '50%', background: COINS[coin].color,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, color: '#14161b',
+          }}
+        >
+          {coin[0]}
+        </span>
+        <h3 style={{ margin: 0 }}>Verificar saldo minerado</h3>
+      </div>
       <p className="desc">
         Consulta em tempo real, direto na API pública da pool — o mesmo dado que aparece no app mobile.
       </p>
@@ -79,7 +92,7 @@ export default function WalletChecker() {
       </div>
       {result && (
         <>
-          <p className="stat-value">{result.pending.toFixed(6)} {coin}</p>
+          <p className="stat-value">⛏️ {result.pending.toFixed(6)} {coin}</p>
           <p className="stat-sub">pendente · {result.paid.toFixed(6)} {coin} já pago · {result.hashes.toLocaleString()} hashes totais</p>
         </>
       )}
