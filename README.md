@@ -13,7 +13,7 @@ App React Native (Expo, dev-client) com:
 ## Versão web
 
 Uma versão de navegador está publicada em:
-**https://bmoreira2004.github.io/criptor-miner-apk/**
+**https://bmoreira2004.github.io/multi-miner/**
 
 Ela prioriza o que é genuinamente real fora do app mobile: consulta de saldo
 ao vivo, benchmark real de hashing RandomX via WASM, e pagamentos Lightning

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 // https://bmoreira2004.github.io/criptor-miner-apk/
 export default defineConfig({
   plugins: [react()],
-  base: '/criptor-miner-apk/',
+  base: '/multi-miner/',
   resolve: {
     alias: {
       // O package.json do randomx.js só expõe a build Node via "exports",

@@ -15,10 +15,10 @@ export default function App() {
           hashing RandomX de verdade via WASM e pagamentos Lightning via WebLN.
         </p>
         <div className="hero-links">
-          <a className="btn btn-primary" href="https://github.com/bmoreira2004/criptor-miner-apk" target="_blank" rel="noreferrer">
+          <a className="btn btn-primary" href="https://github.com/bmoreira2004/multi-miner" target="_blank" rel="noreferrer">
             Ver código no GitHub
           </a>
-          <a className="btn" href="https://github.com/bmoreira2004/criptor-miner-apk#como-gerar-o-apk-de-teste-na-sua-máquina" target="_blank" rel="noreferrer">
+          <a className="btn" href="https://github.com/bmoreira2004/multi-miner#como-gerar-o-apk-de-teste-na-sua-máquina" target="_blank" rel="noreferrer">
             Como gerar o APK
           </a>
         </div>
@@ -48,8 +48,8 @@ export default function App() {
 
       <footer>
         Sem anúncios. Código aberto em{' '}
-        <a href="https://github.com/bmoreira2004/criptor-miner-apk" target="_blank" rel="noreferrer">
-          github.com/bmoreira2004/criptor-miner-apk
+        <a href="https://github.com/bmoreira2004/multi-miner" target="_blank" rel="noreferrer">
+          github.com/bmoreira2004/multi-miner
         </a>.
       </footer>
     </div>

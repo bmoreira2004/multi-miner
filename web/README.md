@@ -1,6 +1,6 @@
 # Multi Miner — Web
 
-Versão de navegador, publicada em: **https://bmoreira2004.github.io/criptor-miner-apk/**
+Versão de navegador, publicada em: **https://bmoreira2004.github.io/multi-miner/**
 
 ## O que é real aqui
 
