@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 const COINS = {
   XMR: {
@@ -13,21 +13,25 @@ const COINS = {
   },
 };
 
+const AUTO_REFRESH_MS = 30000;
+
 export default function WalletChecker() {
   const [coin, setCoin] = useState('XMR');
   const [address, setAddress] = useState('');
   const [result, setResult] = useState(null);
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
+  const [autoRefreshOn, setAutoRefreshOn] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const intervalRef = useRef(null);
 
-  const checkBalance = async () => {
+  const checkBalance = useCallback(async (silent = false) => {
     if (!address) {
       setStatus('Cole um endereço de carteira.');
       return;
     }
-    setLoading(true);
-    setStatus('Consultando a pool...');
-    setResult(null);
+    if (!silent) setLoading(true);
+    if (!silent) setStatus('Consultando a pool...');
     try {
       const res = await fetch(COINS[coin].api(address));
       if (!res.ok) throw new Error(`Pool respondeu ${res.status}`);
@@ -38,15 +42,31 @@ export default function WalletChecker() {
         paid: (data.amtPaid || 0) / atomic,
         hashes: data.hashes || 0,
       });
+      setLastUpdate(new Date());
       setStatus('');
+      setAutoRefreshOn(true);
     } catch (e) {
       setStatus(
         `Não consegui consultar direto do navegador (${e.message}). Isso costuma ser bloqueio de CORS da pool — funciona normalmente no app mobile.`
       );
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, [address, coin]);
+
+  // Mostrador: depois da primeira consulta bem-sucedida, passa a atualizar
+  // sozinho a cada 30s, sem precisar clicar de novo.
+  useEffect(() => {
+    if (!autoRefreshOn) return;
+    intervalRef.current = setInterval(() => checkBalance(true), AUTO_REFRESH_MS);
+    return () => clearInterval(intervalRef.current);
+  }, [autoRefreshOn, checkBalance]);
+
+  useEffect(() => {
+    setAutoRefreshOn(false);
+    setResult(null);
+    clearInterval(intervalRef.current);
+  }, [coin, address]);
 
   return (
     <div className="card">
@@ -86,14 +106,22 @@ export default function WalletChecker() {
         />
       </div>
       <div className="row">
-        <button className="btn btn-primary" onClick={checkBalance} disabled={loading}>
+        <button className="btn btn-primary" onClick={() => checkBalance(false)} disabled={loading}>
           {loading ? 'Consultando...' : 'Consultar saldo'}
         </button>
       </div>
       {result && (
         <>
           <p className="stat-value">⛏️ {result.pending.toFixed(6)} {coin}</p>
-          <p className="stat-sub">pendente · {result.paid.toFixed(6)} {coin} já pago · {result.hashes.toLocaleString()} hashes totais</p>
+          <p className="stat-sub">
+            pendente · {result.paid.toFixed(6)} {coin} já pago · {result.hashes.toLocaleString()} hashes totais
+          </p>
+          {autoRefreshOn && (
+            <p className="stat-sub">
+              🔄 Atualizando sozinho a cada 30s
+              {lastUpdate ? ` · última leitura ${lastUpdate.toLocaleTimeString()}` : ''}
+            </p>
+          )}
         </>
       )}
       {status && <p className="status-line">{status}</p>}

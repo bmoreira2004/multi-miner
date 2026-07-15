@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, AppSta
 import { COINS, getPoolsForCoin } from '../lib/pools';
 import { StratumClient } from '../lib/stratumClient';
 import { startNativeMining, stopNativeMining, subscribeToHashrate, subscribeToShareFound, NATIVE_MINING_AVAILABLE } from '../lib/nativeMiningBridge';
+import { fetchMinerBalance } from '../lib/walletApi';
+
+const BALANCE_POLL_MS = 30000;
 
 export default function MiningScreen() {
   const [coinSymbol, setCoinSymbol] = useState('XMR');
@@ -13,11 +16,47 @@ export default function MiningScreen() {
   const [shares, setShares] = useState({ accepted: 0, rejected: 0 });
   const [currentJob, setCurrentJob] = useState(null);
   const [mining, setMining] = useState(false);
+  const [minedBalance, setMinedBalance] = useState(null);
+  const [balanceError, setBalanceError] = useState('');
+  const [lastBalanceUpdate, setLastBalanceUpdate] = useState(null);
 
   const clientRef = useRef(null);
 
   const pools = getPoolsForCoin(coinSymbol);
   const pool = pools.find((p) => p.id === poolId) || pools[0];
+
+  // Mostrador de saldo: consulta a pool de tempos em tempos, direto na tela
+  // de mineração, sem precisar trocar de aba. Continua funcionando mesmo
+  // com a mineração parada, já que o saldo é o que a pool já creditou.
+  useEffect(() => {
+    if (!walletAddress) {
+      setMinedBalance(null);
+      return;
+    }
+    let cancelled = false;
+    setMinedBalance(null);
+    setBalanceError('');
+
+    const poll = async () => {
+      try {
+        const bal = await fetchMinerBalance(coinSymbol, walletAddress);
+        if (!cancelled) {
+          setMinedBalance(bal);
+          setBalanceError('');
+          setLastBalanceUpdate(new Date());
+        }
+      } catch (e) {
+        if (!cancelled) setBalanceError(e.message);
+      }
+    };
+
+    poll();
+    const interval = setInterval(poll, BALANCE_POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [coinSymbol, walletAddress]);
 
   // Política de loja: mineração só em foreground. Para automaticamente
   // se o app for para background (exigência da App Store 2.4.2, e boa
@@ -81,6 +120,30 @@ export default function MiningScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
       <Text style={styles.title}>Mineração</Text>
+
+      <View style={styles.balanceDisplay}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Text style={{ fontSize: 22 }}>⛏️</Text>
+          <Text style={styles.balanceDisplayLabel}>Saldo minerado ({coinSymbol})</Text>
+        </View>
+        {walletAddress ? (
+          minedBalance ? (
+            <>
+              <Text style={styles.balanceDisplayValue}>{minedBalance.pending.toFixed(6)} {coinSymbol}</Text>
+              <Text style={styles.balanceDisplaySub}>
+                {minedBalance.paidTotal.toFixed(6)} {coinSymbol} já pago pela pool
+                {lastBalanceUpdate ? ` · atualizado ${lastBalanceUpdate.toLocaleTimeString()}` : ''}
+              </Text>
+            </>
+          ) : balanceError ? (
+            <Text style={styles.balanceDisplayError}>{balanceError}</Text>
+          ) : (
+            <Text style={styles.balanceDisplaySub}>Consultando saldo...</Text>
+          )
+        ) : (
+          <Text style={styles.balanceDisplaySub}>Informe seu endereço abaixo para ver o saldo.</Text>
+        )}
+      </View>
 
       {!NATIVE_MINING_AVAILABLE && (
         <View style={styles.warnBox}>
@@ -153,6 +216,18 @@ export default function MiningScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f1115' },
   title: { fontSize: 26, fontWeight: '700', color: '#fff', marginBottom: 16 },
+  balanceDisplay: {
+    backgroundColor: '#1c1f26',
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#2a2f3d',
+  },
+  balanceDisplayLabel: { color: '#9aa0a6', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 },
+  balanceDisplayValue: { color: '#2ecc71', fontSize: 30, fontWeight: '700', marginTop: 8 },
+  balanceDisplaySub: { color: '#9aa0a6', fontSize: 12, marginTop: 6 },
+  balanceDisplayError: { color: '#e74c3c', fontSize: 12, marginTop: 6 },
   label: { color: '#9aa0a6', marginTop: 12, marginBottom: 6, fontSize: 13 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20, backgroundColor: '#1c1f26', marginRight: 8, marginBottom: 8 },
