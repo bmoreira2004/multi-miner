@@ -27,11 +27,7 @@
       }
     },
     "plugins": [
-      "expo-dev-client",
-      [
-        "@breeztech/react-native-breez-sdk",
-        {}
-      ]
+      "expo-dev-client"
     ]
   }
 }
