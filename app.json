@@ -7,7 +7,9 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#0f1115"
+      "image": "./assets/splash.png",
+      "backgroundColor": "#0f1115",
+      "resizeMode": "contain"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
@@ -23,6 +25,7 @@
       "package": "com.brunopagbank.multiminer",
       "permissions": ["INTERNET", "ACCESS_NETWORK_STATE", "FOREGROUND_SERVICE", "WAKE_LOCK"],
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0f1115"
       }
     },
